@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# SMS Spam Detector - development / demo environment
+#
+#   docker compose build                                   # build the image
+#   docker compose run --rm web python manage.py train_models   # train once
+#   docker compose up                                      # start the server
+#   -> http://localhost:8000
+#
+# The training command and the web server share the same `artifacts` volume, so
+# models trained in the one-off container are immediately visible to the server.
+# ---------------------------------------------------------------------------
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sms-spam-detector:1.0.0
+    container_name: sms-spam-detector-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    environment:
+      # Development-friendly defaults; override them in a .env file (see
+      # .env.example) or in the shell environment for production.
+      DJANGO_DEBUG: "${DJANGO_DEBUG:-1}"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-dev-only-insecure-key-change-me}"
+      DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-*}"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "${DJANGO_CSRF_TRUSTED_ORIGINS:-}"
+      DJANGO_LOG_LEVEL: "${DJANGO_LOG_LEVEL:-INFO}"
+      DJANGO_SKIP_STARTUP_CHECK: "${DJANGO_SKIP_STARTUP_CHECK:-0}"
+      DJANGO_DB_PATH: /app/data/db.sqlite3
+      MODEL_ARTIFACTS_DIR: /app/artifacts
+      DATA_DIR: /app/data/raw
+      DETECTOR_DEFAULT_MODEL: "${DETECTOR_DEFAULT_MODEL:-linear_svm}"
+      DETECTOR_MAX_MESSAGE_LENGTH: "${DETECTOR_MAX_MESSAGE_LENGTH:-1600}"
+      GUNICORN_WORKERS: "${GUNICORN_WORKERS:-3}"
+    volumes:
+      # Trained models + metrics (persist across container rebuilds).
+      - ./artifacts:/app/artifacts
+      # SQLite database and the (read-only) dataset file.
+      - ./data:/app/data
+      # Uncomment for live code reload during development (then run
+      # `python manage.py runserver 0.0.0.0:8000` instead of gunicorn):
+      # - .:/app
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind
+      - 0.0.0.0:8000
+      - --workers
+      - "${GUNICORN_WORKERS:-3}"
+      - --timeout
+      - "120"
+      - --access-logfile
+      - "-"
+      - --error-logfile
+      - "-"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}About the project · {{ PROJECT_NAME }}{% endblock %}
+{% block meta_description %}Objective, dataset, TF-IDF, the three algorithms, the technology stack and the limits of this educational SMS spam classifier.{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <span class="eyebrow">Documentation</span>
+  <h1 class="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">About the project</h1>
+  <p class="section-subtitle">
+    A university machine-learning assignment: build a working classifier for unwanted SMS messages
+    and a web interface that shows its result honestly.
+  </p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+  <div class="space-y-6">
+    <section class="card" aria-labelledby="objective-title">
+      <h2 id="objective-title" class="section-title">Objective</h2>
+      <div class="prose-detector">
+        <p>
+          The goal is to build a model that receives the text of an SMS message and decides whether
+          the message is <span class="font-semibold text-emerald-300">normal (Ham)</span> or
+          <span class="font-semibold text-rose-300">Spam</span> - for example unwanted advertising,
+          fraudulent offers or messages carrying suspicious links.
+        </p>
+        <p>
+          Three algorithms are trained on the same features and compared with accuracy, precision,
+          recall and F1-score. A small web application then lets a user type a message and see the
+          classification produced by the trained model.
+        </p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="dataset-title">
+      <h2 id="dataset-title" class="section-title">Dataset</h2>
+      <div class="prose-detector">
+        <p>
+          The project uses the <span class="font-semibold text-white">SMS Spam Collection</span>
+          corpus supplied with the assignment: one message per line, a tab between the label
+          (<span class="mono">ham</span> / <span class="mono">spam</span>) and the raw message text.
+          It is a real, human-labelled collection of English messages - mostly conversational
+          (Ham) and promotional or fraudulent (Spam).
+        </p>
+        {% if summary %}
+          <ul>
+            <li><span class="font-semibold text-white">{{ summary.rows_in_file }}</span> lines in the provided file,
+              <span class="font-semibold text-white">{{ summary.rows_after_cleaning }}</span> unique messages used after cleaning.</li>
+            <li>{{ summary.class_counts.ham }} Ham and {{ summary.class_counts.spam }} Spam messages
+              ({{ summary.class_distribution.spam|floatformat:4 }} spam ratio - the data is imbalanced).</li>
+            <li>{{ summary.duplicate_rows }} duplicated rows were detected;
+              {{ summary.rows_removed_as_duplicates }} were removed so identical texts cannot appear in
+              both the training and the test split.</li>
+            <li>Message length: min {{ summary.message_length.min }},
+              median {{ summary.message_length.median }},
+              max {{ summary.message_length.max }} characters.</li>
+          </ul>
+        {% else %}
+          <p>
+            Run <span class="code-inline">python manage.py train_models</span> to compute the exact
+            statistics of the provided file (rows, class balance, duplicates); this page shows live
+            numbers as soon as training has been run.
+          </p>
+        {% endif %}
+        <p>
+          The dataset is used exactly as provided - no messages were added, removed or relabelled,
+          except for dropping exact duplicates (counted and documented) and normalising the label
+          spelling.
+        </p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="tfidf-title">
+      <h2 id="tfidf-title" class="section-title">TF-IDF in one page</h2>
+      <div class="prose-detector">
+        <p>
+          A classifier cannot read words, so every message is converted into numbers.
+          <span class="font-semibold text-white">TF-IDF</span> does this in two steps:
+        </p>
+        <ul>
+          <li><span class="font-semibold text-white">TF (term frequency)</span>: how often a word
+            (or word pair) appears in this message. Frequent words describe the message.</li>
+          <li><span class="font-semibold text-white">IDF (inverse document frequency)</span>: words
+            that appear in almost every message ("you", "to") carry little information, so their
+            weight is reduced. Rare words carry more.</li>
+          <li>The result is one weight per term per message: the message becomes a vector with
+            thousands of dimensions - most of them zero.</li>
+          <li>Unigrams and bigrams are used here, so the model sees both single words and short
+            phrases such as "free entry" or "call now".</li>
+        </ul>
+        <p>
+          The vectorizer is fitted on the training split only. Fitting it on the whole dataset would
+          leak information from the test messages into the model and inflate the reported scores.
+        </p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="algorithms-title">
+      <h2 id="algorithms-title" class="section-title">The three algorithms</h2>
+      <div class="space-y-6">
+        {% for model in models %}
+          <article id="{{ model.key }}" class="scroll-mt-24">
+            <h3 class="text-base font-semibold text-white">{{ model.name }}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-300">{{ model.about }}</p>
+            <p class="mt-2 text-xs text-slate-500">
+              Configuration used here:
+              {% for name, value in model.hyperparameters.items %}<span class="code-inline">{{ name }}={{ value }}</span> {% endfor %}
+            </p>
+          </article>
+        {% endfor %}
+        <p class="text-sm leading-relaxed text-slate-300">
+          A fourth perspective is useful when reading the comparison table:
+          <span class="font-semibold text-white">precision</span> answers "when the model says spam,
+          how often is it right?", <span class="font-semibold text-white">recall</span> answers "of
+          all real spam, how much did it catch?", and <span class="font-semibold text-white">F1</span>
+          balances the two.
+        </p>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="disclaimer-title">
+      <h2 id="disclaimer-title" class="section-title">Limitations and responsible use</h2>
+      <div class="prose-detector">
+        <p>
+          This is an <span class="font-semibold text-amber-200">educational spam classifier</span>.
+          It makes mistakes: legitimate messages can be flagged as spam, and well-written spam can
+          pass through.
+        </p>
+        <ul>
+          <li>The corpus comes from 2011 and is dominated by UK English, so modern wording,
+            currencies and phone formats are underrepresented.</li>
+          <li>Only the message text is analysed. Sender reputation, sending patterns and link
+            reputation are not available.</li>
+          <li>Reported probabilities are model estimates; the SVM value is a decision margin, not a
+            probability. None of them is proof that a message is safe or fraudulent.</li>
+          <li>Do not use the output as legal, financial or security advice, and do not delete or
+            block messages based on this model alone.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card" aria-labelledby="stack-title">
+      <h2 id="stack-title" class="text-base font-semibold text-white">Technology stack</h2>
+      <dl class="mt-4 space-y-3 text-sm">
+        {% for tech in technologies %}
+          <div>
+            <dt class="font-medium text-slate-100">{{ tech.name }}</dt>
+            <dd class="text-xs text-slate-400">{{ tech.role }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="project-title">
+      <h2 id="project-title" class="text-base font-semibold text-white">Project facts</h2>
+      <dl class="mt-4 space-y-3 text-sm">
+        <div class="flex justify-between gap-3">
+          <dt class="text-slate-400">Version</dt>
+          <dd class="mono">{{ PROJECT_VERSION }}</dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-slate-400">Algorithms</dt>
+          <dd class="mono">3</dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-slate-400">Features</dt>
+          <dd class="mono">TF-IDF 1-2 grams</dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-slate-400">Serving</dt>
+          <dd class="mono">Django 5</dd>
+        </div>
+        {% if split %}
+          <div class="flex justify-between gap-3">
+            <dt class="text-slate-400">Split</dt>
+            <dd class="mono">{{ split.train_rows }}/{{ split.test_rows }}</dd>
+          </div>
+        {% endif %}
+        {% if trained_at %}
+          <div class="flex justify-between gap-3">
+            <dt class="text-slate-400">Trained</dt>
+            <dd class="mono text-xs">{{ trained_at }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+    </section>
+
+    <section class="card">
+      <h2 class="text-base font-semibold text-white">Try it</h2>
+      <p class="mt-2 text-sm text-slate-400">
+        Paste a message on the detector page; the result comes from the trained model you select.
+      </p>
+      <a href="{% url 'detector:detector' %}" class="btn-primary mt-4 w-full">Open the SMS Detector</a>
+      <a href="{% url 'detector:model_comparison' %}" class="btn-secondary mt-2 w-full">See the metrics</a>
+    </section>
+  </aside>
+</div>
+{% endblock %}

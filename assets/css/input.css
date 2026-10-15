@@ -1,0 +1,270 @@
+/* ---------------------------------------------------------------------------
+   Tailwind source for the SMS Spam Detector.
+   Compiled with the Tailwind CLI into assets/css/tailwind.css (committed, so the
+   project runs without a Node.js build step). See README "Styling".
+   --------------------------------------------------------------------------- */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink-950 text-slate-200;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1, h2, h3, h4 {
+    @apply text-white;
+    text-wrap: balance;
+  }
+
+  /* Visible focus ring for keyboard users on every interactive element. */
+  :where(a, button, input, textarea, select, [tabindex]):focus-visible {
+    @apply outline-none ring-2 ring-brand-400 ring-offset-2 ring-offset-ink-950;
+  }
+
+  ::selection {
+    @apply bg-brand-500/40 text-white;
+  }
+}
+
+@layer components {
+  /* Layout helpers ------------------------------------------------------- */
+  .skip-link {
+    @apply sr-only;
+  }
+  .skip-link:focus {
+    @apply not-sr-only fixed left-4 top-4 z-50 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white;
+  }
+
+  .site-backdrop {
+    @apply pointer-events-none fixed inset-0 -z-0;
+    background:
+      radial-gradient(60rem 40rem at 15% -10%, rgba(56, 189, 248, 0.12), transparent 60%),
+      radial-gradient(50rem 35rem at 85% 5%, rgba(139, 92, 246, 0.14), transparent 62%),
+      radial-gradient(40rem 30rem at 50% 110%, rgba(14, 165, 233, 0.10), transparent 60%);
+  }
+
+  .container-narrow {
+    @apply mx-auto w-full max-w-3xl;
+  }
+
+  /* Navigation ----------------------------------------------------------- */
+  .nav-links {
+    @apply absolute left-0 right-0 top-full hidden flex-col gap-1 border-b border-white/5 bg-ink-950/95 p-4 shadow-xl
+           lg:static lg:flex lg:flex-row lg:items-center lg:gap-1 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none;
+  }
+  .nav-links[data-open="true"] {
+    @apply flex;
+  }
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-white;
+  }
+  .nav-link-active {
+    @apply bg-white/5 text-white;
+  }
+  .nav-cta {
+    @apply lg:ml-3;
+  }
+  .nav-toggle {
+    @apply inline-flex items-center justify-center rounded-lg border border-white/10 p-2 text-slate-300 transition hover:bg-white/5 hover:text-white lg:hidden focus-ring;
+  }
+  .footer-link {
+    @apply rounded text-slate-400 transition hover:text-brand-300 focus-ring;
+  }
+
+  /* Surfaces ------------------------------------------------------------- */
+  .card {
+    @apply rounded-2xl border border-white/5 bg-ink-900/70 p-6 shadow-card backdrop-blur-sm;
+  }
+  .card-tight {
+    @apply rounded-xl border border-white/5 bg-ink-900/60 p-4;
+  }
+  .panel-header {
+    @apply mb-4 flex flex-wrap items-center justify-between gap-3;
+  }
+  .section-title {
+    @apply text-xl font-semibold tracking-tight text-white sm:text-2xl;
+  }
+  .section-subtitle {
+    @apply mt-2 max-w-2xl text-sm leading-relaxed text-slate-400;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-1
+           text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-200;
+  }
+  .divider {
+    @apply my-8 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent;
+  }
+
+  /* Typography ----------------------------------------------------------- */
+  .prose-detector p {
+    @apply mt-3 text-sm leading-relaxed text-slate-300;
+  }
+  .prose-detector ul {
+    @apply mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-300;
+  }
+  .muted {
+    @apply text-sm text-slate-400;
+  }
+  .label {
+    @apply block text-sm font-medium text-slate-200;
+  }
+  .hint {
+    @apply mt-1 text-xs text-slate-500;
+  }
+  .mono {
+    @apply font-mono text-[13px];
+  }
+  .code-inline {
+    @apply rounded bg-ink-800 px-1.5 py-0.5 font-mono text-[12.5px] text-brand-200;
+  }
+  .code-block {
+    @apply overflow-x-auto rounded-xl border border-white/5 bg-ink-950/80 p-4 font-mono text-[12.5px] leading-relaxed text-slate-300;
+  }
+
+  /* Buttons -------------------------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition
+           disabled:cursor-not-allowed disabled:opacity-50 focus-ring;
+  }
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-brand-500 to-violet-500 text-white shadow-glow hover:from-brand-400 hover:to-violet-400;
+  }
+  .btn-secondary {
+    @apply btn border border-white/10 bg-white/5 text-slate-100 hover:bg-white/10;
+  }
+  .btn-ghost {
+    @apply btn text-slate-300 hover:bg-white/5 hover:text-white;
+  }
+  .btn-danger {
+    @apply btn border border-rose-500/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-[13px];
+  }
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
+  }
+
+  /* Forms ---------------------------------------------------------------- */
+  .detector-textarea {
+    @apply mt-2 w-full resize-y rounded-xl border border-white/10 bg-ink-950/70 px-4 py-3 text-[15px] leading-relaxed
+           text-slate-100 placeholder:text-slate-500 focus:border-brand-400/60 focus:outline-none;
+  }
+  .detector-select {
+    @apply mt-2 w-full rounded-xl border border-white/10 bg-ink-950/70 px-3 py-2.5 text-sm text-slate-100
+           focus:border-brand-400/60 focus:outline-none;
+  }
+  .field-error {
+    @apply mt-2 flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200;
+  }
+  .field-invalid {
+    @apply border-rose-500/60;
+  }
+
+  /* Status + badges ------------------------------------------------------ */
+  .badge {
+    @apply inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold;
+  }
+  .badge-ham {
+    @apply badge border-emerald-400/30 bg-emerald-500/10 text-emerald-200;
+  }
+  .badge-spam {
+    @apply badge border-rose-400/30 bg-rose-500/10 text-rose-200;
+  }
+  .badge-neutral {
+    @apply badge border-white/10 bg-white/5 text-slate-300;
+  }
+  .badge-warning {
+    @apply badge border-amber-400/30 bg-amber-500/10 text-amber-200;
+  }
+  .notice {
+    @apply flex items-start gap-3 rounded-xl border px-4 py-3 text-sm;
+  }
+  .notice-info {
+    @apply notice border-brand-400/30 bg-brand-500/10 text-brand-100;
+  }
+  .notice-warning {
+    @apply notice border-amber-400/30 bg-amber-500/10 text-amber-100;
+  }
+  .notice-danger {
+    @apply notice border-rose-500/30 bg-rose-500/10 text-rose-100;
+  }
+  .notice-success {
+    @apply notice border-emerald-400/30 bg-emerald-500/10 text-emerald-100;
+  }
+
+  /* Result panel --------------------------------------------------------- */
+  .result-spam {
+    @apply rounded-2xl border border-rose-500/40 bg-rose-950/40 p-6 shadow-glow-danger;
+  }
+  .result-ham {
+    @apply rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-6 shadow-glow-success;
+  }
+  .prob-bar {
+    @apply mt-3 h-2.5 w-full overflow-hidden rounded-full bg-white/10;
+  }
+  .prob-bar-fill {
+    @apply h-full rounded-full transition-all duration-500;
+  }
+
+  /* Tables --------------------------------------------------------------- */
+  .data-table {
+    @apply w-full border-collapse text-left text-sm;
+  }
+  .data-table thead th {
+    @apply whitespace-nowrap border-b border-white/10 px-3 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400;
+  }
+  .data-table tbody td {
+    @apply border-b border-white/5 px-3 py-3 text-slate-200;
+  }
+  .data-table tbody tr:hover {
+    @apply bg-white/[0.03];
+  }
+  .table-scroll {
+    @apply -mx-6 overflow-x-auto px-6 sm:mx-0 sm:px-0;
+  }
+  .num {
+    @apply text-right font-mono tabular-nums;
+  }
+
+  /* Steps / feature grid ------------------------------------------------- */
+  .step-card {
+    @apply relative rounded-2xl border border-white/5 bg-ink-900/60 p-5 transition hover:border-brand-400/30 hover:bg-ink-900;
+  }
+  .step-number {
+    @apply text-xs font-semibold tracking-[0.2em] text-brand-300;
+  }
+  .metric-tile {
+    @apply rounded-xl border border-white/5 bg-ink-900/60 p-4;
+  }
+  .metric-value {
+    @apply mt-1 font-mono text-2xl font-semibold text-white;
+  }
+  .metric-label {
+    @apply text-xs font-medium uppercase tracking-wider text-slate-400;
+  }
+  .confusion-cell {
+    @apply rounded-lg border border-white/5 bg-ink-950/60 p-3 text-center;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[12px] text-slate-200;
+  }
+  .sample-message {
+    @apply rounded-lg border border-white/5 bg-ink-950/50 px-3 py-2 text-xs leading-relaxed text-slate-300
+           transition hover:border-brand-400/30 hover:text-white focus-ring;
+  }
+  .btn-spinner {
+    @apply inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white;
+  }
+  .algo-card {
+    @apply flex h-full flex-col rounded-2xl border border-white/5 bg-ink-900/60 p-5 transition hover:border-violet-400/30;
+  }
+}

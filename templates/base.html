@@ -1,0 +1,94 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ PROJECT_NAME }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ PROJECT_TAGLINE }}. Built with Django and scikit-learn.{% endblock %}">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-ink-950 text-slate-200 antialiased">
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <div class="site-backdrop" aria-hidden="true"></div>
+
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-ink-950/80 backdrop-blur">
+    <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6" aria-label="Main navigation">
+      <a href="{% url 'detector:home' %}" class="group flex items-center gap-3 rounded-lg focus-ring">
+        <span class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5" role="img">
+            <path d="M12 3l7 3v5.5c0 4.2-2.9 7.9-7 9-4.1-1.1-7-4.8-7-9V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M8.6 12.3l2.2 2.2 4.6-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="flex flex-col leading-tight">
+          <span class="text-sm font-semibold tracking-tight text-white sm:text-base">{{ PROJECT_NAME }}</span>
+          <span class="hidden text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400 sm:block">Django · scikit-learn</span>
+        </span>
+      </a>
+
+      <button type="button"
+              class="nav-toggle lg:hidden"
+              data-nav-toggle
+              aria-expanded="false"
+              aria-controls="primary-nav"
+              aria-label="Toggle navigation menu">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div id="primary-nav" class="nav-links" data-nav-links>
+        <a href="{% url 'detector:home' %}" class="nav-link {% if nav_active == 'home' %}nav-link-active{% endif %}">Home</a>
+        <a href="{% url 'detector:detector' %}" class="nav-link {% if nav_active == 'detector' %}nav-link-active{% endif %}">SMS Detector</a>
+        <a href="{% url 'detector:model_comparison' %}" class="nav-link {% if nav_active == 'comparison' %}nav-link-active{% endif %}">Model Comparison</a>
+        <a href="{% url 'detector:about' %}" class="nav-link {% if nav_active == 'about' %}nav-link-active{% endif %}">About Project</a>
+        <a href="{% url 'detector:detector' %}" class="btn-primary btn-sm nav-cta">
+          Analyze a message
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="relative z-10 mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="relative z-10 mt-12 border-t border-white/5 bg-ink-950/70">
+    <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3">
+      <div>
+        <p class="text-sm font-semibold text-white">{{ PROJECT_NAME }}</p>
+        <p class="mt-2 text-sm text-slate-400">
+          University machine-learning project: classify English SMS messages as
+          <span class="text-slate-200">Ham</span> or <span class="text-rose-300">Spam</span> with
+          TF-IDF features and supervised learning.
+        </p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Pages</p>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a class="footer-link" href="{% url 'detector:home' %}">Home</a></li>
+          <li><a class="footer-link" href="{% url 'detector:detector' %}">SMS Detector</a></li>
+          <li><a class="footer-link" href="{% url 'detector:model_comparison' %}">Model Comparison</a></li>
+          <li><a class="footer-link" href="{% url 'detector:about' %}">About Project</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Important</p>
+        <p class="mt-3 text-sm text-slate-400">
+          This classifier is an educational model. It can be wrong in both
+          directions - never treat its output as legal or security advice, and
+          never assume a message is safe because the model said so.
+        </p>
+        <p class="mt-4 text-xs text-slate-500">Version {{ PROJECT_VERSION }} · {% now "Y" %}</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

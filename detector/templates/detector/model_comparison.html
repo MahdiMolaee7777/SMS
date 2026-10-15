@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Model Comparison · {{ PROJECT_NAME }}{% endblock %}
+{% block meta_description %}Accuracy, precision, recall, F1-score and confusion matrices for the three trained SMS spam classifiers.{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <span class="eyebrow">Evaluation</span>
+  <h1 class="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Model Comparison</h1>
+  <p class="section-subtitle">
+    Every number on this page is produced by the training command
+    (<span class="code-inline">python manage.py train_models</span>) from real predictions on a
+    held-out test split. Nothing here is typed by hand.
+  </p>
+</div>
+
+{% if not results_available %}
+  <section class="card" aria-labelledby="setup-title">
+    <h2 id="setup-title" class="text-lg font-semibold text-white">Evaluation results are not available yet</h2>
+    <p class="mt-3 text-sm leading-relaxed text-slate-300">
+      This page never shows invented charts. Train the models once and the real metrics, the bar
+      chart and the confusion matrices will appear here.
+    </p>
+    <pre class="code-block mt-4">python manage.py train_models</pre>
+    <p class="hint mt-3">
+      The command writes <span class="code-inline">{{ metrics_file }}</span>. With Docker, run
+      <span class="code-inline">docker compose run --rm web python manage.py train_models</span>.
+    </p>
+  </section>
+{% else %}
+  <!-- summary -->
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Evaluation summary">
+    <div class="metric-tile">
+      <p class="metric-label">Best model (F1)</p>
+      <p class="metric-value text-lg">{{ best_model.display_name }}</p>
+      <p class="hint">F1 {{ best_model.f1|floatformat:4 }} · accuracy {{ best_model.accuracy|floatformat:4 }}</p>
+    </div>
+    <div class="metric-tile">
+      <p class="metric-label">Test split</p>
+      <p class="metric-value">{{ split.test_rows }}</p>
+      <p class="hint">messages ({{ split.test_size|floatformat:2 }} of the dataset),
+        stratified={{ split.stratified|yesno:"yes,no" }}</p>
+    </div>
+    <div class="metric-tile">
+      <p class="metric-label">Training rows</p>
+      <p class="metric-value">{{ split.train_rows }}</p>
+      <p class="hint">random_state={{ split.random_state }}</p>
+    </div>
+    <div class="metric-tile">
+      <p class="metric-label">Trained at (UTC)</p>
+      <p class="metric-value text-base">{{ trained_at }}</p>
+      <p class="hint">scikit-learn {{ environment.scikit_learn }} · Python {{ environment.python }}</p>
+    </div>
+  </section>
+
+  <!-- metrics table -->
+  <section class="card mt-6" aria-labelledby="table-title">
+    <div class="panel-header">
+      <div>
+        <h2 id="table-title" class="text-lg font-semibold text-white">Metrics on the held-out test split</h2>
+        <p class="hint">
+          Positive class: <span class="font-semibold text-slate-200">{{ positive_class }}</span> -
+          precision, recall and F1 describe how well spam is detected.
+        </p>
+      </div>
+      <span class="badge-neutral">{{ split.test_rows }} test messages</span>
+    </div>
+
+    <div class="table-scroll">
+      <table class="data-table">
+        <caption class="sr-only">Accuracy, precision, recall and F1-score per model</caption>
+        <thead>
+          <tr>
+            <th scope="col">Model</th>
+            <th scope="col" class="num">Accuracy</th>
+            <th scope="col" class="num">Precision (spam)</th>
+            <th scope="col" class="num">Recall (spam)</th>
+            <th scope="col" class="num">F1 (spam)</th>
+            <th scope="col" class="num">ROC-AUC</th>
+            <th scope="col" class="num">CV F1 (5-fold)</th>
+            <th scope="col" class="num">ms / message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for model in model_rows %}
+            <tr {% if model.key == best_model.key %}class="bg-brand-500/5"{% endif %}>
+              <th scope="row" class="py-3 pr-3 text-left font-medium text-white">
+                {{ model.display_name }}
+                {% if model.key == best_model.key %}<span class="badge-warning ml-2">best F1</span>{% endif %}
+                <span class="mt-1 block text-xs font-normal text-slate-400">
+                  {{ model.short_description }}
+                </span>
+                <span class="mt-1 block text-xs font-normal text-slate-500">
+                  Vocab: {{ model.vocabulary_size }} features · trained in {{ model.training_seconds }} s
+                </span>
+              </th>
+              <td class="num">{{ model.metrics.accuracy|floatformat:4 }}</td>
+              <td class="num">{{ model.metrics.precision|floatformat:4 }}</td>
+              <td class="num">{{ model.metrics.recall|floatformat:4 }}</td>
+              <td class="num font-semibold text-white">{{ model.metrics.f1|floatformat:4 }}</td>
+              <td class="num">{{ model.metrics.roc_auc|floatformat:4 }}</td>
+              <td class="num">
+                {% if model.cross_validation %}{{ model.cross_validation.mean_f1|floatformat:4 }}
+                  <span class="text-xs text-slate-500">± {{ model.cross_validation.std_f1|floatformat:3 }}</span>
+                {% else %}n/a{% endif %}
+              </td>
+              <td class="num">{{ model.metrics.latency.per_message_ms|floatformat:3 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if best_model %}
+      <p class="mt-4 text-sm text-slate-300">
+        <span class="font-semibold text-white">{{ best_model.display_name }}</span> has the highest
+        F1-score for the spam class on this test split, so it is the default classifier on the
+        detector page. Selection rule: {{ best_model.selected_by }}.
+      </p>
+    {% endif %}
+  </section>
+
+  <!-- chart -->
+  <section class="card mt-6" aria-labelledby="chart-title">
+    <div class="panel-header">
+      <div>
+        <h2 id="chart-title" class="text-lg font-semibold text-white">Metric comparison</h2>
+        <p class="hint">Values in percent, computed from the same predictions as the table.</p>
+      </div>
+      <span class="badge-neutral">Chart.js</span>
+    </div>
+    {{ chart_data|json_script:"chart-data" }}
+    <div class="relative h-80 w-full">
+      <canvas id="metrics-chart" aria-label="Bar chart comparing accuracy, precision, recall and F1 per model" role="img"></canvas>
+    </div>
+    <noscript>
+      <p class="hint">The chart needs JavaScript. The table above contains the same values.</p>
+    </noscript>
+    <table class="data-table mt-4">
+      <caption class="sr-only">Chart data as text</caption>
+      <thead>
+        <tr><th scope="col">Model</th><th scope="col" class="num">Accuracy %</th><th scope="col" class="num">Precision %</th><th scope="col" class="num">Recall %</th><th scope="col" class="num">F1 %</th></tr>
+      </thead>
+      <tbody>
+        {% for model in model_rows %}
+          <tr>
+            <th scope="row" class="text-left font-normal">{{ model.display_name }}</th>
+            <td class="num">{{ model.metrics.accuracy|floatformat:4 }}</td>
+            <td class="num">{{ model.metrics.precision|floatformat:4 }}</td>
+            <td class="num">{{ model.metrics.recall|floatformat:4 }}</td>
+            <td class="num">{{ model.metrics.f1|floatformat:4 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- confusion matrices -->
+  <section class="card mt-6" aria-labelledby="cm-title">
+    <div class="panel-header">
+      <div>
+        <h2 id="cm-title" class="text-lg font-semibold text-white">Confusion matrices</h2>
+        <p class="hint">Raw counts per class on the {{ split.test_rows }}-message test split.</p>
+      </div>
+    </div>
+    <div class="grid gap-6 lg:grid-cols-3">
+      {% for model in model_rows %}
+        <article class="card-tight">
+          <h3 class="text-sm font-semibold text-white">{{ model.display_name }}</h3>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
+            <div></div>
+            <div class="text-slate-400">Predicted Ham</div>
+            <div class="flex items-center text-slate-400">Actual Ham</div>
+            <div class="confusion-cell">
+              <p class="text-lg font-semibold text-emerald-300">{{ model.metrics.confusion_matrix.true_negative }}</p>
+              <p class="text-[11px] text-slate-500">true negative</p>
+            </div>
+            <div class="flex items-center text-slate-400">Actual Spam</div>
+            <div class="confusion-cell">
+              <p class="text-lg font-semibold text-rose-300">{{ model.metrics.confusion_matrix.false_negative }}</p>
+              <p class="text-[11px] text-slate-500">false negative</p>
+            </div>
+            <div></div>
+            <div></div>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2 text-center text-xs">
+            <div></div>
+            <div class="text-slate-400">Predicted Spam</div>
+            <div></div>
+            <div class="confusion-cell">
+              <p class="text-lg font-semibold text-amber-300">{{ model.metrics.confusion_matrix.false_positive }}</p>
+              <p class="text-[11px] text-slate-500">false positive</p>
+            </div>
+            <div></div>
+            <div class="confusion-cell">
+              <p class="text-lg font-semibold text-rose-200">{{ model.metrics.confusion_matrix.true_positive }}</p>
+              <p class="text-[11px] text-slate-500">true positive</p>
+            </div>
+          </div>
+          <dl class="mt-4 space-y-1 text-[11px] text-slate-500">
+            <div class="flex justify-between gap-2"><dt>Ham support</dt><dd class="mono">{{ model.metrics.support.ham }}</dd></div>
+            <div class="flex justify-between gap-2"><dt>Spam support</dt><dd class="mono">{{ model.metrics.support.spam }}</dd></div>
+          </dl>
+        </article>
+      {% endfor %}
+    </div>
+    <p class="mt-4 text-sm text-slate-400">
+      A false negative is spam that reaches the user; a false positive is a legitimate message that
+      would be blocked. Which error matters more depends on the deployment, which is why both are
+      shown instead of a single accuracy number.
+    </p>
+  </section>
+
+  <!-- methodology -->
+  <section class="card mt-6" aria-labelledby="method-title">
+    <h2 id="method-title" class="text-lg font-semibold text-white">Evaluation protocol</h2>
+    <div class="prose-detector">
+      <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-300">
+        <li>The dataset is loaded exactly as provided, labels are normalised to <span class="mono">ham</span>/<span class="mono">spam</span>
+          and exact duplicate messages are removed ({{ dataset.duplicate_rows }} duplicates found,
+          {{ dataset.rows_removed_as_duplicates }} removed).</li>
+        <li>The remaining {{ dataset.rows_after_cleaning }} messages are split
+          {{ split.train_rows }}/{{ split.test_rows }} with
+          <span class="mono">train_test_split(test_size={{ split.test_size }}, random_state={{ split.random_state }}, stratify=y)</span>,
+          so both parts keep the same spam ratio.</li>
+        <li>Each algorithm is a scikit-learn <span class="mono">Pipeline</span>:
+          text cleaning → <span class="mono">TfidfVectorizer</span> → classifier. The vectorizer is
+          fitted on the <span class="font-semibold">training split only</span>, so no test message
+          influences the vocabulary or the IDF weights.</li>
+        <li>Predictions are made once on the untouched test split and compared with the true labels:
+          accuracy, precision, recall, F1 (positive class = spam), ROC-AUC and the confusion matrix.</li>
+        <li>Cross-validation ({{ cv_folds|default:5 }}-fold stratified F1 on the
+          training split) is reported as a stability check, not as a headline score.</li>
+      </ol>
+      <p class="mt-4 text-sm text-slate-300">
+        <span class="font-semibold text-white">Score types.</span>
+        Naive Bayes and Logistic Regression expose <span class="mono">predict_proba</span>, so a
+        probability of spam can be reported. The Linear SVM only exposes a decision margin, which is
+        reported as a signed distance - never converted into a fake percentage.
+      </p>
+      <p class="mt-3 text-sm text-slate-300">
+        <span class="font-semibold text-white">Environment.</span>
+        Trained with scikit-learn {{ environment.scikit_learn }}, pandas {{ environment.pandas }},
+        NumPy {{ environment.numpy }} on {{ environment.platform }}. Total training time
+        {{ results.duration_seconds }} s (CPU only).
+      </p>
+    </div>
+  </section>
+
+  <!-- strongest features -->
+  <section class="card mt-6" aria-labelledby="features-title">
+    <h2 id="features-title" class="text-lg font-semibold text-white">What the models learned</h2>
+    <p class="hint">
+      Highest and lowest model weights extracted from the trained estimators. These are *learned*
+      indicators, not a hand-written keyword list.
+    </p>
+    <div class="mt-4 grid gap-4 lg:grid-cols-3">
+      {% for model in model_rows %}
+        <article class="card-tight">
+          <h3 class="text-sm font-semibold text-white">{{ model.display_name }}</h3>
+          <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-rose-300">Towards spam</p>
+          <ul class="mt-2 flex flex-wrap gap-1.5">
+            {% for item in model.top_features.spam %}
+              <li class="chip border-rose-400/25 text-rose-100">{{ item.term }}</li>
+            {% endfor %}
+          </ul>
+          <p class="mt-3 text-xs font-semibold uppercase tracking-wider text-emerald-300">Towards ham</p>
+          <ul class="mt-2 flex flex-wrap gap-1.5">
+            {% for item in model.top_features.ham %}
+              <li class="chip border-emerald-400/25 text-emerald-100">{{ item.term }}</li>
+            {% endfor %}
+          </ul>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if results_available %}
+  <script src="{% static 'vendor/chart.umd.min.js' %}" defer></script>
+  <script src="{% static 'js/charts.js' %}" defer></script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% comment %}Standalone 500 template: Django renders it without context processors.{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Server error · SMS Spam Detector</title>
+  <link rel="stylesheet" href="/static/css/tailwind.css">
+</head>
+<body class="min-h-screen bg-ink-950 text-slate-200 antialiased">
+  <main class="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-4 px-6 text-center">
+    <p class="mono text-sm text-rose-300">500</p>
+    <h1 class="text-2xl font-semibold text-white">Something went wrong on the server</h1>
+    <p class="text-sm text-slate-400">
+      The request could not be completed. The error has been logged. If you were analysing a
+      message, check that the models are trained (<span class="code-inline">python manage.py train_models</span>)
+      and try again.
+    </p>
+    <a class="btn-primary" href="/">Back to the home page</a>
+  </main>
+</body>
+</html>

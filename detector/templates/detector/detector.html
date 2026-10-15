@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}SMS Detector · {{ PROJECT_NAME }}{% endblock %}
+{% block meta_description %}Paste an English SMS message and classify it as Ham or Spam with a trained TF-IDF machine-learning model.{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <span class="eyebrow">Main tool</span>
+  <h1 class="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">SMS Detector</h1>
+  <p class="section-subtitle">
+    Paste one English text message, choose the trained classifier and press
+    <span class="text-slate-200">Analyze Message</span>. The result is produced live by the model
+    stored in <span class="code-inline">artifacts/models/</span> - there are no canned answers.
+  </p>
+</div>
+
+{% if not any_model_available %}
+  <div class="notice-warning mb-8" role="status">
+    <span aria-hidden="true">⚠</span>
+    <div>
+      <p class="font-semibold">No trained model found - setup required.</p>
+      <p class="mt-1">
+        Train the classifiers once with
+        <span class="code-inline">{{ training_hint }}</span>, then reload this page.
+        (With Docker: <span class="code-inline">docker compose run --rm web python manage.py train_models</span>.)
+      </p>
+    </div>
+  </div>
+{% endif %}
+
+<div class="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+  <!-- ---------------------------------------------------------------- form -->
+  <section class="card" aria-labelledby="form-title">
+    <div class="panel-header">
+      <h2 id="form-title" class="text-base font-semibold text-white">Message to analyse</h2>
+      <span class="badge-neutral">max {{ max_message_length }} characters</span>
+    </div>
+
+    <form id="analyze-form"
+          method="post"
+          action="{% url 'detector:detector' %}"
+          data-analyze-url="{% url 'detector:analyze_api' %}"
+          novalidate>
+      {% csrf_token %}
+
+      <div id="form-error-container">
+        {% if form.non_field_errors %}
+          <div class="field-error mb-4">
+            <span aria-hidden="true">⚠</span>
+            <div>{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <label class="label" for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+      {{ form.message }}
+      <div id="form-message-wrapper">
+        {% if form.message.errors %}
+          <div class="field-error" id="message-errors">
+            <span aria-hidden="true">⚠</span>
+            <div>{% for error in form.message.errors %}<p>{{ error }}</p>{% endfor %}</div>
+          </div>
+        {% endif %}
+      </div>
+      <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <p class="hint" id="message-help">
+          Plain text only. Empty messages and messages longer than {{ max_message_length }}
+          characters are rejected before the model runs.
+        </p>
+        <p class="hint mono" id="message-counter" aria-live="polite">
+          <span data-counter-value>0</span>/{{ max_message_length }}
+        </p>
+      </div>
+
+      <div class="mt-6">
+        <label class="label" for="{{ form.model.id_for_label }}">Classifier</label>
+        {{ form.model }}
+        {% if form.model.errors %}
+          <div class="field-error">
+            <span aria-hidden="true">⚠</span>
+            <div>{% for error in form.model.errors %}<p>{{ error }}</p>{% endfor %}</div>
+          </div>
+        {% endif %}
+        <ul class="mt-3 space-y-1 text-xs text-slate-500">
+          {% for status in model_statuses %}
+            <li data-model-note="{{ status.key }}">
+              <span class="mono text-slate-300">{{ status.display_name }}</span> ·
+              {{ status.short_description }}
+              {% if not status.available %}<span class="text-amber-300">(not trained)</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <button type="submit" class="btn-primary" id="analyze-button" {% if not any_model_available %}disabled{% endif %}>
+          <span class="btn-spinner hidden" data-spinner aria-hidden="true"></span>
+          <span data-button-label>Analyze Message</span>
+        </button>
+        <button type="button" class="btn-secondary" id="clear-button">Clear</button>
+        <button type="button" class="btn-ghost btn-sm" id="sample-button">Insert an example</button>
+      </div>
+      <p class="hint mt-3" id="client-status" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="divider"></div>
+
+    <div>
+      <h3 class="text-sm font-semibold text-white">Example messages</h3>
+      <p class="hint mt-1">
+        These fill the textarea so you can try the model yourself; the classification is still
+        produced by the trained algorithm, not by the example text.
+      </p>
+      <div class="mt-3 flex flex-col gap-2">
+        <button type="button" class="sample-message text-left" data-sample="Congratulations! You have won a £900 prize reward. Call 09061701461 to claim. Claim code KL341. Valid 12 hours only.">
+          Congratulations! You have won a £900 prize reward. Call 09061701461 to claim…
+        </button>
+        <button type="button" class="sample-message text-left" data-sample="Hi mum, I'll be home around 7pm. Can you put the pasta on? Thanks!">
+          Hi mum, I'll be home around 7pm. Can you put the pasta on? Thanks!
+        </button>
+        <button type="button" class="sample-message text-left" data-sample="URGENT! Your mobile number has been selected for a free entry into our weekly competition. Text WIN to 80082 now.">
+          URGENT! Your mobile number has been selected for a free entry…
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- -------------------------------------------------------------- result -->
+  <div class="space-y-6">
+    <div id="result-container" aria-live="polite">
+      {% include "detector/_result.html" %}
+    </div>
+
+    {% if error_message %}
+      <div class="notice-danger" role="alert">
+        <span aria-hidden="true">⚠</span>
+        <div>
+          <p class="font-semibold">The analysis could not be completed.</p>
+          <p class="mt-1">{{ error_message }}</p>
+          {% if setup_required %}
+            <p class="mt-2">
+              Run <span class="code-inline">{{ training_hint }}</span> and reload the page.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <section class="card" aria-labelledby="reading-title">
+      <h2 id="reading-title" class="text-base font-semibold text-white">How to read the result</h2>
+      <ul class="mt-3 space-y-2 text-sm text-slate-300">
+        <li>• <span class="font-semibold">Ham</span> means the model considers the message
+          ordinary; <span class="font-semibold">Spam</span> means unwanted, promotional or
+          fraudulent-looking content.</li>
+        <li>• The <span class="font-semibold">model name</span> is shown because the three
+          algorithms can disagree on borderline messages.</li>
+        <li>• Naive Bayes and Logistic Regression report an estimated probability of spam.
+          The Linear SVM reports the distance from its decision boundary (a margin), which is
+          <span class="text-amber-200">not</span> a probability.</li>
+        <li>• Inference time is measured on this server for this request only.</li>
+        <li>• A confident answer is still only a statistical estimate: legitimate messages can be
+          flagged and sophisticated spam can slip through. Never rely on this tool as the only
+          protection.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/detector.js' %}" defer></script>
+{% endblock %}
