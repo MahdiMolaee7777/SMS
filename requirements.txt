@@ -1,0 +1,33 @@
+# ---------------------------------------------------------------------------
+# SMS Spam Detector - runtime dependencies
+#
+# Exact versions verified together on Python 3.12 (Docker image) and Python 3.13
+# (development machine). They are pinned so that a re-run of `train_models`
+# produces the same numbers.
+# ---------------------------------------------------------------------------
+
+# Web framework
+Django==5.2.18
+asgiref==3.12.1            # Django's async/WSGI base
+sqlparse==0.6.0            # required by Django
+
+# Machine learning
+scikit-learn==1.6.1
+numpy==2.3.5
+scipy==1.17.1              # required by scikit-learn
+joblib==1.5.3              # pipeline persistence + used by scikit-learn
+threadpoolctl==3.7.0       # required by scikit-learn
+
+# Data handling
+pandas==2.2.3
+python-dateutil==2.9.0.post0
+pytz==2025.2
+tzdata==2026.5
+
+# Static files and configuration
+whitenoise==6.12.0         # serves the compiled CSS/JS in production mode
+python-dotenv==1.2.4       # reads the optional .env file
+
+# Production server (used by the Docker image; `runserver` is used locally)
+gunicorn==26.2.0
+packaging==26.3

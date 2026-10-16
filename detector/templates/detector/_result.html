@@ -1,0 +1,103 @@
+{% comment %}
+Result panel. Rendered server-side after a POST and swapped in by detector.js after an
+asynchronous request, so the markup (and its escaping rules) exists only once.
+{% endcomment %}
+{% if prediction %}
+  <section class="{% if prediction.is_spam %}result-spam{% else %}result-ham{% endif %}" data-prediction-label="{{ prediction.label }}">
+    <div class="panel-header">
+      <div class="flex items-center gap-3">
+        {% if prediction.is_spam %}
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl border border-rose-400/40 bg-rose-500/15 text-xl" aria-hidden="true">⛔</span>
+        {% else %}
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-400/40 bg-emerald-500/15 text-xl" aria-hidden="true">✓</span>
+        {% endif %}
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] {% if prediction.is_spam %}text-rose-200{% else %}text-emerald-200{% endif %}">
+            Predicted class
+          </p>
+          <p class="text-2xl font-semibold text-white">{{ prediction.display_label }}</p>
+        </div>
+      </div>
+      <span class="{% if prediction.is_spam %}badge-spam{% else %}badge-ham{% endif %}">
+        {% if prediction.is_spam %}Spam{% else %}Ham{% endif %}
+      </span>
+    </div>
+
+    <p class="text-sm leading-relaxed {% if prediction.is_spam %}text-rose-100{% else %}text-emerald-100{% endif %}">
+      {% if prediction.is_spam %}
+        This message looks like unwanted, promotional or fraudulent SMS content.
+        Treat links and phone numbers in it with suspicion.
+      {% else %}
+        This message looks like an ordinary message. The model found no strong spam pattern.
+      {% endif %}
+    </p>
+
+    {% if prediction.score_display %}
+      <div class="mt-5 rounded-xl border border-white/10 bg-ink-950/40 p-4">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{{ prediction.score_label }}</p>
+          <p class="mono text-lg font-semibold text-white">{{ prediction.score_display }}</p>
+        </div>
+        {% if prediction.score_type == "probability" %}
+          <div class="prob-bar">
+            <div class="prob-bar-fill {% if prediction.is_spam %}bg-gradient-to-r from-amber-400 to-rose-500{% else %}bg-gradient-to-r from-brand-400 to-emerald-400{% endif %}"
+                 style="width: {{ prediction.score_pct }}%"></div>
+          </div>
+        {% endif %}
+        <p class="mt-3 text-xs leading-relaxed text-slate-400">{{ prediction.score_hint }}</p>
+      </div>
+    {% endif %}
+
+    <dl class="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+      <div class="card-tight">
+        <dt class="metric-label">Classifier</dt>
+        <dd class="mt-1 text-slate-100">{{ prediction.model_display_name }}</dd>
+      </div>
+      <div class="card-tight">
+        <dt class="metric-label">Inference time</dt>
+        <dd class="mt-1 mono text-slate-100">{{ prediction.latency_ms }} ms</dd>
+      </div>
+      <div class="card-tight">
+        <dt class="metric-label">Message length</dt>
+        <dd class="mt-1 mono text-slate-100">{{ prediction.message_length }} chars</dd>
+      </div>
+    </dl>
+
+    {% if prediction.explanation %}
+      <details class="mt-5 rounded-xl border border-white/10 bg-ink-950/40 p-4">
+        <summary class="cursor-pointer text-sm font-medium text-slate-200">
+          Which n-grams influenced this prediction?
+        </summary>
+        <p class="mt-2 text-xs leading-relaxed text-slate-400">
+          Contribution = TF-IDF value of the term in this message &times; the weight the model learned
+          for it. Positive values push towards spam, negative values towards ham. This is a linear-model
+          explanation, not a causation proof.
+        </p>
+        <ul class="mt-3 flex flex-wrap gap-2">
+          {% for item in prediction.explanation %}
+            <li class="chip {% if item.direction == 'spam' %}border-rose-400/30 text-rose-100{% else %}border-emerald-400/30 text-emerald-100{% endif %}">
+              {{ item.term }} <span class="ml-1 text-slate-400">{{ item.contribution }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </details>
+    {% endif %}
+
+    <p class="mt-4 text-xs text-slate-400">
+      Analysed at {{ prediction.predicted_at }} (UTC) with the persisted model
+      <span class="mono">{{ prediction.model_key }}</span>.
+    </p>
+  </section>
+{% else %}
+  <section class="card" data-placeholder="true">
+    <div class="panel-header">
+      <h2 class="text-base font-semibold text-white">Result</h2>
+      <span class="badge-neutral">waiting for input</span>
+    </div>
+    <p class="text-sm text-slate-400">
+      No analysis yet. Paste a message, choose a classifier and press
+      <span class="text-slate-200">Analyze Message</span> - the predicted class, the model name and
+      the inference time will appear here.
+    </p>
+  </section>
+{% endif %}

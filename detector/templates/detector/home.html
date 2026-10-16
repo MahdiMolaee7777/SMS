@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}{{ PROJECT_NAME }} · Machine-learning SMS spam classification{% endblock %}
+
+{% block content %}
+<section class="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]" aria-labelledby="hero-title">
+  <div>
+    <span class="eyebrow">
+      <span class="h-1.5 w-1.5 rounded-full bg-brand-400" aria-hidden="true"></span>
+      University ML project · NLP text classification
+    </span>
+    <h1 id="hero-title" class="mt-5 text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+      Tell spam from legitimate SMS with a
+      <span class="bg-gradient-to-r from-brand-300 to-violet-300 bg-clip-text text-transparent">trained machine-learning model</span>
+    </h1>
+    <p class="mt-5 max-w-2xl text-base leading-relaxed text-slate-300">
+      {{ PROJECT_NAME }} analyses an English text message and classifies it as
+      <span class="font-semibold text-emerald-300">Ham</span> (normal) or
+      <span class="font-semibold text-rose-300">Spam</span> (unwanted, promotional or fraudulent).
+      The prediction comes from real TF-IDF pipelines trained on the SMS Spam Collection
+      dataset with three different algorithms - nothing is simulated, hardcoded or keyword-based.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <a href="{% url 'detector:detector' %}" class="btn-primary" data-analytics="cta-detector">
+        Open the SMS Detector
+        <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none" aria-hidden="true">
+          <path d="M4 10h11M10.5 5.5L15 10l-4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="{% url 'detector:model_comparison' %}" class="btn-secondary">Compare the three models</a>
+    </div>
+
+    <dl class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="metric-tile">
+        <dt class="metric-label">Algorithms</dt>
+        <dd class="metric-value">3</dd>
+      </div>
+      <div class="metric-tile">
+        <dt class="metric-label">Features</dt>
+        <dd class="metric-value">TF-IDF</dd>
+      </div>
+      {% if summary %}
+        <div class="metric-tile">
+          <dt class="metric-label">Messages used</dt>
+          <dd class="metric-value">{{ summary.rows_after_cleaning }}</dd>
+        </div>
+        <div class="metric-tile">
+          <dt class="metric-label">Spam share</dt>
+          <dd class="metric-value">{{ summary.class_distribution.spam|floatformat:3 }}</dd>
+        </div>
+      {% else %}
+        <div class="metric-tile">
+          <dt class="metric-label">Dataset</dt>
+          <dd class="metric-value text-base">SMS Spam Collection</dd>
+        </div>
+        <div class="metric-tile">
+          <dt class="metric-label">Setup</dt>
+          <dd class="metric-value text-base">Train to see metrics</dd>
+        </div>
+      {% endif %}
+    </dl>
+  </div>
+
+  <div class="card">
+    <div class="panel-header">
+      <h2 class="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">What the tool does</h2>
+      <span class="badge-neutral">educational</span>
+    </div>
+    <ul class="space-y-4 text-sm">
+      <li class="flex gap-3">
+        <span class="mt-0.5 text-brand-300" aria-hidden="true">●</span>
+        <span><span class="font-semibold text-white">Accepts one English SMS</span> and validates it
+          (empty or oversized input is rejected with a clear message).</span>
+      </li>
+      <li class="flex gap-3">
+        <span class="mt-0.5 text-brand-300" aria-hidden="true">●</span>
+        <span><span class="font-semibold text-white">Runs a real trained model</span> - you choose
+          Naive Bayes, Logistic Regression or the Linear SVM.</span>
+      </li>
+      <li class="flex gap-3">
+        <span class="mt-0.5 text-brand-300" aria-hidden="true">●</span>
+        <span><span class="font-semibold text-white">Reports the predicted class</span> together with
+          the model name, the inference time and an honest note about what the model score means.</span>
+      </li>
+      <li class="flex gap-3">
+        <span class="mt-0.5 text-brand-300" aria-hidden="true">●</span>
+        <span><span class="font-semibold text-white">Publishes its own evaluation</span> - accuracy,
+          precision, recall, F1-score (spam = positive class) and confusion matrices measured on a
+          held-out test split.</span>
+      </li>
+    </ul>
+    <p class="mt-5 rounded-xl border border-white/5 bg-ink-950/60 p-3 text-xs leading-relaxed text-slate-400">
+      Not implemented: URL reputation checks, e-mail or messaging-app integration, user accounts,
+      continuous background scanning or any form of real-time protection. The model only reads the
+      text you paste.
+    </p>
+  </div>
+</section>
+
+<section class="mt-16" aria-labelledby="pipeline-title">
+  <h2 id="pipeline-title" class="section-title">How the detection pipeline works</h2>
+  <p class="section-subtitle">
+    The same four steps run during training and during prediction; the cleaning and TF-IDF steps
+    are stored inside the saved model, so the two can never diverge.
+  </p>
+  <ol class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {% for step in pipeline_steps %}
+      <li class="step-card">
+        <p class="step-number">{{ step.number }}</p>
+        <h3 class="mt-3 text-base font-semibold text-white">{{ step.title }}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-400">{{ step.text }}</p>
+      </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section class="mt-16" aria-labelledby="algorithms-title">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h2 id="algorithms-title" class="section-title">Three algorithms, one comparison</h2>
+      <p class="section-subtitle">
+        All three models share exactly the same features, split and evaluation protocol, so the
+        comparison on the Model Comparison page is fair.
+      </p>
+    </div>
+    {% if results_available and best_model %}
+      <span class="badge-warning">Best on the test split: {{ best_model.display_name }}</span>
+    {% endif %}
+  </div>
+
+  <div class="mt-6 grid gap-4 md:grid-cols-3">
+    {% for model in models %}
+      <article class="algo-card">
+        <h3 class="text-base font-semibold text-white">{{ model.name }}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate-400">{{ model.short }}</p>
+        <dl class="mt-4 space-y-1 text-xs text-slate-500">
+          {% for name, value in model.hyperparameters.items %}
+            <div class="flex justify-between gap-3">
+              <dt class="mono">{{ name }}</dt>
+              <dd class="mono text-slate-300">{{ value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+        <a href="{% url 'detector:about' %}#{{ model.key }}" class="mt-4 inline-flex text-sm font-medium text-brand-300 hover:text-brand-200 focus-ring">
+          How it works →
+        </a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-16" aria-labelledby="capabilities-title">
+  <div class="card">
+    <h2 id="capabilities-title" class="section-title">What this project actually delivers</h2>
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-300">Works today</h3>
+        <ul class="mt-3 space-y-2 text-sm text-slate-300">
+          <li>• Classification of a single English SMS into Ham or Spam.</li>
+          <li>• Selection between three independently trained models.</li>
+          <li>• Measured evaluation metrics and confusion matrices for all three.</li>
+          <li>• Reproducible training through one Django management command.</li>
+          <li>• Docker-based development environment and automated tests.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-[0.14em] text-amber-300">Known limits</h3>
+        <ul class="mt-3 space-y-2 text-sm text-slate-300">
+          <li>• Trained on a 2011 UK corpus: modern wording may be misclassified.</li>
+          <li>• Only the message text is used; sender metadata is unavailable.</li>
+          <li>• Scores are model estimates or margins, never proof of safety.</li>
+          <li>• English messages only.</li>
+          {% if split %}
+            <li>• Metrics come from a {{ split.test_rows }}-message held-out split ({{ split.test_size|floatformat:0 }}%).</li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+    {% if not any_model_available %}
+      <div class="notice-warning mt-6">
+        <span aria-hidden="true">⚠</span>
+        <div>
+          <p class="font-semibold">Models are not trained in this environment yet.</p>
+          <p class="mt-1">Run <span class="code-inline">python manage.py train_models</span> once, then reload
+            this page. The detector explains the same thing instead of showing invented results.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

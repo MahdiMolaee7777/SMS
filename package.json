@@ -1,0 +1,19 @@
+{
+  "name": "sms-spam-detector-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Front-end tooling for the SMS Spam Detector: compiles Tailwind CSS and vendors Chart.js locally. The compiled output is committed, so Node.js is only needed when styles change.",
+  "scripts": {
+    "css:build": "tailwindcss -c tailwind.config.js -i assets/css/input.css -o assets/css/tailwind.css --minify",
+    "css:watch": "tailwindcss -c tailwind.config.js -i assets/css/input.css -o assets/css/tailwind.css --watch",
+    "vendor:chart": "node scripts/vendor-chart.js",
+    "assets:build": "npm run css:build && npm run vendor:chart"
+  },
+  "devDependencies": {
+    "chart.js": "4.4.7",
+    "tailwindcss": "3.4.17"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

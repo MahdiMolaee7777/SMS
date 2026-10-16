@@ -218,3 +218,87 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---------------------------------------------------------------------------
+# SMS Spam Detector - project specific rules (appended to the Python .gitignore)
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# SMS Spam Detector
+# ---------------------------------------------------------------------------
+
+# Secrets and local configuration - never commit these.
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Django
+*.sqlite3
+db.sqlite3
+data/db.sqlite3
+/staticfiles/
+MEDIA_ROOT/
+
+# Trained models, evaluation results and the generated report.
+# They are produced by `python manage.py train_models`. The delivered branch
+# commits them on purpose (via `git add -f`) so that a clone works out of the
+# box; un-comment the rules below if you prefer a source-only repository.
+#
+# artifacts/*
+# !artifacts/.gitkeep
+# !artifacts/models/
+# artifacts/models/*
+# !artifacts/models/.gitkeep
+
+# Machine-learning caches / logs
+# (the trained pipelines in artifacts/models/ are force-added, see above)
+*.joblib
+*.pkl
+*.h5
+*.log
+logs/
+
+# Front-end tooling
+node_modules/
+.npm/
+.cache/
+tailwindcss
+*.css.map
+
+# Test / coverage output
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.pytest_cache/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Workspace-specific
+.arena/

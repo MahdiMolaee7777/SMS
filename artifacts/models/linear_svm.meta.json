@@ -1,0 +1,64 @@
+{
+  "key": "linear_svm",
+  "display_name": "Linear Support Vector Machine",
+  "trained_at": "2026-10-15T14:03:31+00:00",
+  "pipeline_steps": [
+    "clean",
+    "tfidf",
+    "clf"
+  ],
+  "hyperparameters": {
+    "C": 1.0,
+    "loss": "squared_hinge",
+    "class_weight": "balanced",
+    "max_iter": 5000
+  },
+  "score_type": "decision",
+  "sklearn_version": "1.6.1",
+  "feature_count": 9956,
+  "metrics": {
+    "accuracy": 0.9913,
+    "precision": 0.976,
+    "recall": 0.9531,
+    "f1": 0.9644,
+    "roc_auc": 0.9972,
+    "positive_class": "spam",
+    "confusion_matrix": {
+      "labels": [
+        "ham",
+        "spam"
+      ],
+      "matrix": [
+        [
+          901,
+          3
+        ],
+        [
+          6,
+          122
+        ]
+      ],
+      "true_negative": 901,
+      "false_positive": 3,
+      "false_negative": 6,
+      "true_positive": 122,
+      "interpretation": {
+        "true_negative": "Ham correctly classified as Ham",
+        "false_positive": "Ham wrongly flagged as Spam",
+        "false_negative": "Spam that slipped through",
+        "true_positive": "Spam correctly detected"
+      }
+    },
+    "support": {
+      "ham": 904,
+      "spam": 128
+    },
+    "test_rows": 1032,
+    "latency": {
+      "total_predict_seconds": 0.0394,
+      "per_message_ms": 0.038
+    }
+  },
+  "dataset_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "positive_class": "spam"
+}

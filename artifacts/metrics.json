@@ -1,0 +1,641 @@
+{
+  "schema_version": 1,
+  "project": "SMS Spam Detector",
+  "trained_at": "2026-10-15T14:03:31+00:00",
+  "duration_seconds": 4.33,
+  "positive_class": "spam",
+  "negative_class": "ham",
+  "environment": {
+    "python": "3.13.16",
+    "scikit_learn": "1.6.1",
+    "pandas": "2.2.3",
+    "numpy": "2.3.5",
+    "platform": "Linux-6.1.158+-x86_64-with-glibc2.41"
+  },
+  "dataset": {
+    "source_file": "/home/user/sms-spam-detector/data/raw/SMSSpamCollection.txt",
+    "rows_in_file": 5574,
+    "rows_after_cleaning": 5160,
+    "missing_messages": 0,
+    "missing_labels": 0,
+    "duplicate_rows": 414,
+    "duplicates_removed": true,
+    "rows_removed_as_duplicates": 414,
+    "conflicting_labels_for_same_text": 0,
+    "unknown_labels": {},
+    "unknown_label_rows_dropped": 0,
+    "class_counts": {
+      "ham": 4518,
+      "spam": 642
+    },
+    "class_distribution": {
+      "ham": 0.8756,
+      "spam": 0.1244
+    },
+    "imbalance_ratio_ham_to_spam": 7.037,
+    "message_length": {
+      "min": 2,
+      "max": 910,
+      "mean": 79.14,
+      "median": 61.0
+    },
+    "sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+    "usage": "loaded exactly as provided; only labels were normalised to ham/spam"
+  },
+  "split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "stratified": true,
+    "train_rows": 4128,
+    "test_rows": 1032,
+    "train_class_distribution": {
+      "ham": 0.8755,
+      "spam": 0.1245
+    },
+    "test_class_distribution": {
+      "ham": 0.876,
+      "spam": 0.124
+    },
+    "train_class_counts": {
+      "ham": 3614,
+      "spam": 514
+    },
+    "test_class_counts": {
+      "ham": 904,
+      "spam": 128
+    },
+    "positive_class": "spam"
+  },
+  "features": {
+    "vectorizer": "TfidfVectorizer",
+    "params": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "min_df": 2,
+      "max_df": 0.98,
+      "sublinear_tf": true,
+      "lowercase": true,
+      "strip_accents": "unicode",
+      "dtype": "float64"
+    },
+    "cleaning": "detector.ml.cleaning.clean_text (inside each pipeline)",
+    "vocabulary_size": {
+      "naive_bayes": 9956,
+      "logistic_regression": 9956,
+      "linear_svm": 9956
+    },
+    "fitted_on": "training split only (inside each Pipeline)"
+  },
+  "models": {
+    "naive_bayes": {
+      "key": "naive_bayes",
+      "display_name": "Multinomial Naive Bayes",
+      "short_description": "Fast probabilistic baseline based on word frequencies.",
+      "family": "naive_bayes",
+      "score_type": "probability",
+      "score_label": "Model score (estimated probability of spam)",
+      "score_hint": "Multinomial Naive Bayes estimates class probabilities from word frequencies. The value is a model estimate, not proof that a message is safe or fraudulent.",
+      "about": "Naive Bayes applies Bayes' theorem and assumes every word is independent of the others. That assumption is wrong for language, yet the algorithm is extremely fast and a famously strong baseline for spam filtering, which is why it was used in the first generation of production spam filters.",
+      "hyperparameters": {
+        "alpha": 0.1,
+        "fit_prior": true
+      },
+      "metrics": {
+        "accuracy": 0.9845,
+        "precision": 0.9667,
+        "recall": 0.9062,
+        "f1": 0.9355,
+        "roc_auc": 0.9917,
+        "positive_class": "spam",
+        "confusion_matrix": {
+          "labels": [
+            "ham",
+            "spam"
+          ],
+          "matrix": [
+            [
+              900,
+              4
+            ],
+            [
+              12,
+              116
+            ]
+          ],
+          "true_negative": 900,
+          "false_positive": 4,
+          "false_negative": 12,
+          "true_positive": 116,
+          "interpretation": {
+            "true_negative": "Ham correctly classified as Ham",
+            "false_positive": "Ham wrongly flagged as Spam",
+            "false_negative": "Spam that slipped through",
+            "true_positive": "Spam correctly detected"
+          }
+        },
+        "support": {
+          "ham": 904,
+          "spam": 128
+        },
+        "test_rows": 1032,
+        "latency": {
+          "total_predict_seconds": 0.0416,
+          "per_message_ms": 0.04
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "scoring": "f1 (spam as positive class)",
+        "mean_f1": 0.9444,
+        "std_f1": 0.0169,
+        "scores": [
+          0.9447,
+          0.9604,
+          0.9436,
+          0.9596,
+          0.9137
+        ]
+      },
+      "training_seconds": 0.196,
+      "artifact": "models/naive_bayes.joblib",
+      "artifact_bytes": 263072,
+      "vocabulary_size": 9956,
+      "top_features": {
+        "spam": [
+          {
+            "term": "claim",
+            "weight": 5.8552
+          },
+          {
+            "term": "prize",
+            "weight": 5.7086
+          },
+          {
+            "term": "call __phone__",
+            "weight": 5.5342
+          },
+          {
+            "term": "nokia",
+            "weight": 5.3499
+          },
+          {
+            "term": "box __num__",
+            "weight": 5.3132
+          },
+          {
+            "term": "your mobile",
+            "weight": 5.2852
+          },
+          {
+            "term": "have won",
+            "weight": 5.2709
+          },
+          {
+            "term": "__phone__ now",
+            "weight": 5.2425
+          },
+          {
+            "term": "to claim",
+            "weight": 5.2048
+          },
+          {
+            "term": "ppm",
+            "weight": 5.1961
+          },
+          {
+            "term": "__money__ cash",
+            "weight": 5.1871
+          },
+          {
+            "term": "guaranteed",
+            "weight": 5.1785
+          }
+        ],
+        "ham": [
+          {
+            "term": "gt",
+            "weight": -4.4794
+          },
+          {
+            "term": "lt",
+            "weight": -4.4775
+          },
+          {
+            "term": "lt gt",
+            "weight": -4.3878
+          },
+          {
+            "term": "lor",
+            "weight": -4.3075
+          },
+          {
+            "term": "da",
+            "weight": -4.2631
+          },
+          {
+            "term": "he",
+            "weight": -4.2097
+          },
+          {
+            "term": "later",
+            "weight": -3.8686
+          },
+          {
+            "term": "she",
+            "weight": -3.8618
+          },
+          {
+            "term": "lol",
+            "weight": -3.7693
+          },
+          {
+            "term": "anything",
+            "weight": -3.7266
+          },
+          {
+            "term": "doing",
+            "weight": -3.6795
+          },
+          {
+            "term": "going to",
+            "weight": -3.587
+          }
+        ]
+      }
+    },
+    "logistic_regression": {
+      "key": "logistic_regression",
+      "display_name": "Logistic Regression",
+      "short_description": "Linear classifier with interpretable per-word weights.",
+      "family": "logistic_regression",
+      "score_type": "probability",
+      "score_label": "Model score (estimated probability of spam)",
+      "score_hint": "Logistic Regression maps the TF-IDF features through a sigmoid function. The value is an estimated probability produced by the model, not a guarantee.",
+      "about": "Logistic Regression learns one weight per TF-IDF feature and squashes the weighted sum through a sigmoid. It is the standard baseline for text classification: cheap to train, well calibrated in practice and easy to explain, because each weight can be read as 'how spammy is this word'.",
+      "hyperparameters": {
+        "C": 10.0,
+        "solver": "liblinear",
+        "max_iter": 2000,
+        "class_weight": "balanced"
+      },
+      "metrics": {
+        "accuracy": 0.9893,
+        "precision": 0.9606,
+        "recall": 0.9531,
+        "f1": 0.9569,
+        "roc_auc": 0.998,
+        "positive_class": "spam",
+        "confusion_matrix": {
+          "labels": [
+            "ham",
+            "spam"
+          ],
+          "matrix": [
+            [
+              899,
+              5
+            ],
+            [
+              6,
+              122
+            ]
+          ],
+          "true_negative": 899,
+          "false_positive": 5,
+          "false_negative": 6,
+          "true_positive": 122,
+          "interpretation": {
+            "true_negative": "Ham correctly classified as Ham",
+            "false_positive": "Ham wrongly flagged as Spam",
+            "false_negative": "Spam that slipped through",
+            "true_positive": "Spam correctly detected"
+          }
+        },
+        "support": {
+          "ham": 904,
+          "spam": 128
+        },
+        "test_rows": 1032,
+        "latency": {
+          "total_predict_seconds": 0.0464,
+          "per_message_ms": 0.039
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "scoring": "f1 (spam as positive class)",
+        "mean_f1": 0.9552,
+        "std_f1": 0.023,
+        "scores": [
+          0.9524,
+          0.9758,
+          0.9655,
+          0.9703,
+          0.9118
+        ]
+      },
+      "training_seconds": 0.208,
+      "artifact": "models/logistic_regression.joblib",
+      "artifact_bytes": 158903,
+      "vocabulary_size": 9956,
+      "top_features": {
+        "spam": [
+          {
+            "term": "__money__",
+            "weight": 12.2726
+          },
+          {
+            "term": "__phone__",
+            "weight": 11.4634
+          },
+          {
+            "term": "__num__",
+            "weight": 8.374
+          },
+          {
+            "term": "__url__",
+            "weight": 7.2006
+          },
+          {
+            "term": "to __num__",
+            "weight": 7.1
+          },
+          {
+            "term": "text",
+            "weight": 6.7679
+          },
+          {
+            "term": "txt",
+            "weight": 6.1085
+          },
+          {
+            "term": "call",
+            "weight": 5.7518
+          },
+          {
+            "term": "free",
+            "weight": 5.6832
+          },
+          {
+            "term": "your",
+            "weight": 5.2327
+          },
+          {
+            "term": "call __phone__",
+            "weight": 5.2111
+          },
+          {
+            "term": "reply",
+            "weight": 5.0644
+          }
+        ],
+        "ham": [
+          {
+            "term": "my",
+            "weight": -3.6495
+          },
+          {
+            "term": "me",
+            "weight": -3.218
+          },
+          {
+            "term": "gt",
+            "weight": -2.517
+          },
+          {
+            "term": "lt",
+            "weight": -2.4882
+          },
+          {
+            "term": "ok",
+            "weight": -2.3938
+          },
+          {
+            "term": "got",
+            "weight": -2.3583
+          },
+          {
+            "term": "lt gt",
+            "weight": -2.2727
+          },
+          {
+            "term": "that",
+            "weight": -2.2281
+          },
+          {
+            "term": "then",
+            "weight": -2.1927
+          },
+          {
+            "term": "your call",
+            "weight": -2.1797
+          },
+          {
+            "term": "can",
+            "weight": -2.0635
+          },
+          {
+            "term": "work",
+            "weight": -1.9538
+          }
+        ]
+      }
+    },
+    "linear_svm": {
+      "key": "linear_svm",
+      "display_name": "Linear Support Vector Machine",
+      "short_description": "Maximum-margin linear model, strong on high-dimensional text.",
+      "family": "svm",
+      "score_type": "decision",
+      "score_label": "Model score (SVM decision margin, not a probability)",
+      "score_hint": "LinearSVC outputs a distance from the separating hyperplane (decision function), not a probability. The sign gives the class; the magnitude only expresses how far from the boundary the message sits. It is shown as a margin, never as a percentage.",
+      "about": "A Support Vector Machine finds the hyperplane that separates spam from ham with the widest possible margin. With TF-IDF features the data is high-dimensional and almost linearly separable, so the linear variant (LinearSVC) is both accurate and fast.",
+      "hyperparameters": {
+        "C": 1.0,
+        "loss": "squared_hinge",
+        "class_weight": "balanced",
+        "max_iter": 5000
+      },
+      "metrics": {
+        "accuracy": 0.9913,
+        "precision": 0.976,
+        "recall": 0.9531,
+        "f1": 0.9644,
+        "roc_auc": 0.9972,
+        "positive_class": "spam",
+        "confusion_matrix": {
+          "labels": [
+            "ham",
+            "spam"
+          ],
+          "matrix": [
+            [
+              901,
+              3
+            ],
+            [
+              6,
+              122
+            ]
+          ],
+          "true_negative": 901,
+          "false_positive": 3,
+          "false_negative": 6,
+          "true_positive": 122,
+          "interpretation": {
+            "true_negative": "Ham correctly classified as Ham",
+            "false_positive": "Ham wrongly flagged as Spam",
+            "false_negative": "Spam that slipped through",
+            "true_positive": "Spam correctly detected"
+          }
+        },
+        "support": {
+          "ham": 904,
+          "spam": 128
+        },
+        "test_rows": 1032,
+        "latency": {
+          "total_predict_seconds": 0.0394,
+          "per_message_ms": 0.038
+        }
+      },
+      "cross_validation": {
+        "folds": 5,
+        "scoring": "f1 (spam as positive class)",
+        "mean_f1": 0.9578,
+        "std_f1": 0.0211,
+        "scores": [
+          0.9612,
+          0.9709,
+          0.9703,
+          0.9703,
+          0.9163
+        ]
+      },
+      "training_seconds": 0.218,
+      "artifact": "models/linear_svm.joblib",
+      "artifact_bytes": 144031,
+      "vocabulary_size": 9956,
+      "top_features": {
+        "spam": [
+          {
+            "term": "__phone__",
+            "weight": 3.061
+          },
+          {
+            "term": "__money__",
+            "weight": 3.0036
+          },
+          {
+            "term": "__url__",
+            "weight": 1.9135
+          },
+          {
+            "term": "__num__",
+            "weight": 1.8232
+          },
+          {
+            "term": "to __num__",
+            "weight": 1.7922
+          },
+          {
+            "term": "text",
+            "weight": 1.7185
+          },
+          {
+            "term": "txt",
+            "weight": 1.5985
+          },
+          {
+            "term": "ringtone",
+            "weight": 1.421
+          },
+          {
+            "term": "free",
+            "weight": 1.3016
+          },
+          {
+            "term": "service",
+            "weight": 1.2974
+          },
+          {
+            "term": "call __num__",
+            "weight": 1.2945
+          },
+          {
+            "term": "call",
+            "weight": 1.2908
+          }
+        ],
+        "ham": [
+          {
+            "term": "my",
+            "weight": -0.8482
+          },
+          {
+            "term": "me",
+            "weight": -0.7901
+          },
+          {
+            "term": "your call",
+            "weight": -0.7714
+          },
+          {
+            "term": "gt",
+            "weight": -0.6879
+          },
+          {
+            "term": "lt",
+            "weight": -0.6665
+          },
+          {
+            "term": "lt gt",
+            "weight": -0.6394
+          },
+          {
+            "term": "got",
+            "weight": -0.6054
+          },
+          {
+            "term": "yup",
+            "weight": -0.5794
+          },
+          {
+            "term": "ok",
+            "weight": -0.538
+          },
+          {
+            "term": "work",
+            "weight": -0.5278
+          },
+          {
+            "term": "hey",
+            "weight": -0.5247
+          },
+          {
+            "term": "can",
+            "weight": -0.5186
+          }
+        ]
+      }
+    }
+  },
+  "best_model": {
+    "key": "linear_svm",
+    "display_name": "Linear Support Vector Machine",
+    "f1": 0.9644,
+    "accuracy": 0.9913,
+    "selected_by": "highest F1 on the spam class, then accuracy"
+  },
+  "artifacts": {
+    "directory": "/home/user/sms-spam-detector/artifacts",
+    "models": {
+      "naive_bayes": "models/naive_bayes.joblib",
+      "logistic_regression": "models/logistic_regression.joblib",
+      "linear_svm": "models/linear_svm.joblib"
+    },
+    "metrics_file": "metrics.json"
+  }
+}
