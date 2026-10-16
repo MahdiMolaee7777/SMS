@@ -26,6 +26,9 @@ Nothing in this list is an assumption: each line states the command and its obse
 | 19 | Docker Compose file | YAML parsed and inspected | ✅ valid YAML, health check, volumes, env defaults; **not executed** (no Docker daemon in the delivery sandbox) |
 | 20 | Dockerfile | static review; `sh -n docker/entrypoint.sh` | ✅ valid shell syntax, executable mode 755, referenced files exist; **image build not executed** (no Docker daemon) |
 | 21 | Makefile targets | reviewed against the actual file layout | ✅ command paths verified; targets not run end-to-end (they call the same commands verified above) |
+| 22 | Git repository prepared | `git init -b main`, feature branch, `git add -A`, commit | ✅ `main` = placeholder base, `feat/sms-spam-detector` = 74 files / 13 767 insertions committed; working tree clean (`git status --porcelain` empty) |
+| 23 | Push to GitHub | `git push` | ❌ **not possible from the build environment**: no GitHub app is connected to the conversation (`list_connector_tools("github")` returns *unsupported*), no repository remote exists, and the sandbox holds no token or SSH key (checked `env`, `~/.git-credentials`, `~/.netrc`, `~/.ssh`). GitHub is reachable anonymously only |
+| 24 | Downloadable archive | `zip -r sms-spam-detector.zip sms-spam-detector` | ✅ 2.7 MB, 308 entries, includes the `.git` directory with both branches; verified by extracting to a clean directory: `git log --all` shows both commits and the app classified a message correctly |
 
 ## Not executed, with reasons
 
