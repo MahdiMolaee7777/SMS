@@ -142,6 +142,14 @@ Never commit a token into the repository (`.env` and `*.pem` are already ignored
 
 ---
 
+## Branch layout in the download
+
+| Branch | Content |
+| --- | --- |
+| `main` | byte-identical to your GitHub `main` (`Initial commit`) — pushing it changes nothing |
+| `feat/sms-spam-detector` | your commit + 5 project commits (the Pull Request) |
+| `archive/pre-rebase-history` | local safety copy of the project commits *before* they were rebased onto your `main`; not pushed, safe to delete with `git branch -D archive/pre-rebase-history` |
+
 ## What is inside the prepared commit
 
 * `feat/sms-spam-detector` — 74 files: Django project + app, ML layer, management commands,
