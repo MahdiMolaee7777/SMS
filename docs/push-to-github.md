@@ -1,5 +1,26 @@
 # Pushing this project to GitHub
 
+> **Current state of this repository (already prepared for `MahdiMolaee7777/SMS`)**
+>
+> * `origin` -> `https://github.com/MahdiMolaee7777/SMS.git`
+> * `main` is **exactly** your remote `main` (`8eb120b Initial commit`), so pushing it is a no-op
+>   and nothing of yours is overwritten.
+> * `feat/sms-spam-detector` was **rebased onto your `main`**, so the Pull Request has a proper
+>   common ancestor. Your `LICENSE` is kept and your `.gitignore` was merged with the project rules.
+> * The commit history is preserved: your `Initial commit` is the root, followed by four project
+>   commits (feature, checklist, push helpers, executable-bit fix).
+> * Only the remote/write step is missing, because the build environment has no GitHub credentials
+>   (`git push` returns *"Invalid username or token. Password authentication is not supported"*).
+>
+> **One command, after unzipping:**
+>
+> ```bash
+> ./push-to-github.sh https://github.com/MahdiMolaee7777/SMS.git "Mahdi" "you@example.com"
+> # then open the printed compare link:
+> # https://github.com/MahdiMolaee7777/SMS/compare/main...feat/sms-spam-detector?expand=1
+> ```
+
+
 The repository in this folder is **already prepared for you**: it has a `main` branch (empty base)
 and a `feat/sms-spam-detector` branch that contains the complete project as one commit. All that is
 left is to add your remote and push.
