@@ -10,7 +10,24 @@ left is to add your remote and push.
 
 ---
 
-## Option A — push the prepared repository (recommended)
+## Option 0 — one command (recommended)
+
+The repository contains a ready-made script that performs every step below:
+
+```bash
+./push-to-github.sh https://github.com/<your-username>/<your-repo>.git "Your Name" "you@example.com"
+# Windows / PowerShell:
+# .\push-to-github.ps1 -RepoUrl https://github.com/<your-username>/<your-repo>.git -AuthorName "Your Name" -AuthorEmail "you@example.com"
+```
+
+It puts your name on the prepared commit, sets up `origin`, pushes `main` and
+`feat/sms-spam-detector`, and prints the Pull Request link. If your repository already has a
+`main` branch the script only warms about it and pushes the feature branch instead, so nothing is
+overwritten.
+
+---
+
+## Option A — push the prepared repository (manual)
 
 Unzip the archive, open a terminal in the project folder and run:
 
