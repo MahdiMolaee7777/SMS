@@ -43,6 +43,7 @@ services:
       # Uncomment for live code reload during development (then run
       # `python manage.py runserver 0.0.0.0:8000` instead of gunicorn):
       # - .:/app
+      - .:/app
     command:
       - gunicorn
       - config.wsgi:application
